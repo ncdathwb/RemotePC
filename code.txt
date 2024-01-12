@@ -36,5 +36,6 @@ update_pip()
 libs_to_install = ['requests']
 all_installed = check_and_install_libs(libs_to_install)
 #------------------------------------------------------------------------------------------------------------------------------
+# Khi nào import thư viện khác vào thì nhớ thêm vào dòng 36 để nó tự tải về máy victim··
 import requests
 print(requests.get('https://api.ipify.org/').text)
