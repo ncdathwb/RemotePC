@@ -37,7 +37,7 @@ def status_online(repository, access_token):
     while True:
         current_status = f'{requests.get("https://api.ipify.org/").text} đang Online'
         create_file_on_github(repository, file_path, access_token, current_status)
-        time.sleep(10)
+        time.sleep(300)
 
 def unrelated_task():
     print('Luồng 2 chạy')
