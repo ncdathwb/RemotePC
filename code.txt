@@ -38,3 +38,4 @@ all_installed = check_and_install_libs(libs_to_install)
 #------------------------------------------------------------------------------------------------------------------------------
 import requests
 print(requests.get('https://api.ipify.org/').text)
+input('')
