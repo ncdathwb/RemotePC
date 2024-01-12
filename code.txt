@@ -35,8 +35,6 @@ def check_and_install_libs(libs):
 update_pip()
 libs_to_install = ['requests']
 all_installed = check_and_install_libs(libs_to_install)
-if all_installed:
-    print('\n[V] Perfect Libs')
 #------------------------------------------------------------------------------------------------------------------------------
 import requests
 print(requests.get('https://api.ipify.org/').text)
