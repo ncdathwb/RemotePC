@@ -82,7 +82,7 @@ def unrelated_task():
 
 if __name__ == "__main__":
     repository = "ncdathwb/RemotePC"
-    access_token = "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"
+    access_token = "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"
     online_status_thread = threading.Thread(target=status_online, args=(repository, access_token))
     online_status_thread.start()
     unrelated_task_thread = threading.Thread(target=unrelated_task)
